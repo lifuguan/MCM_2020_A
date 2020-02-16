@@ -23,17 +23,17 @@ def readCsv(filename):
 
 
 
-def linearExgression(testTime, testData, checkTime, checkData, ifPlot):
+def linearExgression(testTime, testData, checkTime, checkData, lossRate, ifPlot):
     '''
-    函数：线性回归
-    输入：testTime, testData, 0(不测试), 0(不测试) , true(是否绘图)
-    返回：最大值， 最小值， 两者距离
+    @description: 线性回归
+    @param {testTime, testData, 0(不测试), 0(不测试), lossRate(损失函数参数) , true(是否绘图)} 
+    @return: {最大值， 最小值， 两者距离}
     '''
     #设置参数
     #设置梯度下降算法的学习率
     learning_rate = 0.01
     #设置迭代次数
-    max_steps = 1000
+    max_steps = 2000
     #每迭代100次输出一次loss
     show_step = 100
     # 模拟训练数据
@@ -56,7 +56,7 @@ def linearExgression(testTime, testData, checkTime, checkData, ifPlot):
     pred = tf.add(tf.multiply(X,W),b)
  
     #定义损失函数
-    loss = 0.4 * tf.reduce_sum(tf.pow(pred-Y,2)) / n_samples
+    loss = lossRate * tf.reduce_sum(tf.pow(pred-Y,2)) / n_samples
     #使用梯度下降算法来优化损失函数
     train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
  
@@ -74,7 +74,7 @@ def linearExgression(testTime, testData, checkTime, checkData, ifPlot):
                 print("step:",step,"-step loss:%.4f",step_loss)
         #计算最终的Loss
         train_loss = sess.run([loss],feed_dict={X:train_X,Y:train_Y})
-        print("train loss:%.4f",0.1)
+        print("train loss:%.4f",train_loss)
         #输出参数
         print("weights:",sess.run(W),"-bias:",sess.run(b))
 
@@ -84,7 +84,8 @@ def linearExgression(testTime, testData, checkTime, checkData, ifPlot):
         plt.plot(train_X, arrayPredict, label="predict data")
         plt.legend(loc="upper left")
         if ifPlot == True:
-            plt.show()
+            plt.savefig("./" + str(lossRate) + ".png")
+            # plt.show()
         else:
             pass
 
@@ -100,7 +101,9 @@ def linearExgression(testTime, testData, checkTime, checkData, ifPlot):
 
 def curveFitting(testTime, testData):
     '''
-    函数：曲线拟合
+    @description: 曲线拟合
+    @param {type} 
+    @return: none
     '''
     a, b = [], []
     for i in range(len(testTime)):
@@ -143,53 +146,52 @@ def curveFitting(testTime, testData):
 
 def predictPlot(initVal, slope):
     '''
-    函数：预测以后50年内的温度图像
+    @description: 预测以后50年内的温度图像
+    @param ：none
+    @return: none
     '''
     x = range(2020, 2070)
     y = [item * slope + initVal for item in range(1, 51)]
     pass
 
 def testFunc():
+
     testTime, testData = readCsv("srcdata.csv")
     checkTime, checkData = readCsv("testdata.csv")
 
-    maxVal, minVal, disVal = linearExgression(testTime, testData, 0, 0, True)
+    maxVal, minVal, disVal = linearExgression(testTime, testData, 0, 0, 0.15, True)
     # curveFitting(testTime, testData)
 
     # 求得斜率
     slope = (maxVal - minVal) / disVal
+    print("slope : ", slope)
     predictPlot(maxVal, slope)
     pass
 
 if __name__ == "__main__":
     tf.disable_v2_behavior()
-    testFunc()
+    # testFunc()
 
-    # # 斜率的统计表
-    # slopeList  = [[0]*14 for i in range(16)]
+    # 斜率的统计表
+    slopeList  = [[0]*14 for i in range(16)]
 
-    # # 定位数据点
-    # # 循环同一纬度
-    # for lat in range(0, 16):
-    #     # 循环同一经度
-    #     for lon in range(0, 14):  
-    #         testData = []
-    #         # 同样经度/纬度，不同年份的数据
-    #         for yer in range(0, int(len(sst_data.data) / 16)):
-    #             testData.append(sst_data.data[yer * 16 + lat][lon])
-    #         # print(testData) # 测试是否遍历成功
 
-    #         maxVal, minVal, disVal = linearExgression(range(0, 48), testData, 0, 0, False)
-    #         slopeList[lat][lon] = (maxVal - minVal) / disVal
+    for lossRate in [0.15, 0.20, 0.55]:
+        # 定位数据点
+        # 循环同一纬度
+        for lat in range(0, 16):
+            # 循环同一经度
+            for lon in range(0, 14):  
+                testData = []
+                # 同样经度/纬度，不同年份的数据
+                for yer in range(0, int(len(sst_data.data) / 16)):
+                    testData.append(sst_data.data[yer * 16 + lat][lon])
+                # print(testData) # 测试是否遍历成功
+
+                maxVal, minVal, disVal = linearExgression(range(0, 48), testData, 0, 0, lossRate, False)
+                slopeList[lat][lon] = (maxVal - minVal) / disVal
+        
+        # 保存文件
+        np.savetxt("SST predict/slopeList_" + str(lossRate * 100) + ".txt",slopeList)
     
-    # # 保存文件
-    # np.savetxt("SST predict/slopeList.txt",slopeList)
-    # # b =  np.loadtxt("slopeList.txt")
-    
-    
-    
-
-
-    
-
 
