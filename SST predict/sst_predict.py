@@ -153,7 +153,7 @@ def testFunc():
     testTime, testData = readCsv("srcdata.csv")
     checkTime, checkData = readCsv("testdata.csv")
 
-    maxVal, minVal, disVal = linearExgression(testTime, testData, checkTime, checkData)
+    maxVal, minVal, disVal = linearExgression(testTime, testData, 0, 0, True)
     # curveFitting(testTime, testData)
 
     # 求得斜率
@@ -163,28 +163,28 @@ def testFunc():
 
 if __name__ == "__main__":
     tf.disable_v2_behavior()
-    # testFunc()
+    testFunc()
 
-    # 斜率的统计表
-    slopeList  = [[0]*14 for i in range(16)]
+    # # 斜率的统计表
+    # slopeList  = [[0]*14 for i in range(16)]
 
-    # 定位数据点
-    # 循环同一纬度
-    for lat in range(0, 16):
-        # 循环同一经度
-        for lon in range(0, 14):  
-            testData = []
-            # 同样经度/纬度，不同年份的数据
-            for yer in range(0, int(len(sst_data.data) / 16)):
-                testData.append(sst_data.data[yer * 16 + lat][lon])
-            # print(testData) # 测试是否遍历成功
+    # # 定位数据点
+    # # 循环同一纬度
+    # for lat in range(0, 16):
+    #     # 循环同一经度
+    #     for lon in range(0, 14):  
+    #         testData = []
+    #         # 同样经度/纬度，不同年份的数据
+    #         for yer in range(0, int(len(sst_data.data) / 16)):
+    #             testData.append(sst_data.data[yer * 16 + lat][lon])
+    #         # print(testData) # 测试是否遍历成功
 
-            maxVal, minVal, disVal = linearExgression(range(0, 48), testData, 0, 0, False)
-            slopeList[lat][lon] = (maxVal - minVal) / disVal
+    #         maxVal, minVal, disVal = linearExgression(range(0, 48), testData, 0, 0, False)
+    #         slopeList[lat][lon] = (maxVal - minVal) / disVal
     
-    # 保存文件
-    np.savetxt("SST predict/slopeList.txt",slopeList)
-    # b =  np.loadtxt("slopeList.txt")
+    # # 保存文件
+    # np.savetxt("SST predict/slopeList.txt",slopeList)
+    # # b =  np.loadtxt("slopeList.txt")
     
     
     
