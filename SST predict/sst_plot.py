@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     # n年后的温度值
     yer = 10
-    data_prdict += yer * slopeList * (377 / 377)  # 乘以最好，最坏，正常的比率
+    data_prdict += yer * slopeList * (566 / 377)  # 乘以最好，最坏，正常的比率
     
     sst = np.array(data_prdict)
     longitude = range(65, 49, -1)
