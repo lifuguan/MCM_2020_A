@@ -2,7 +2,7 @@ import tensorflow.compat.v1 as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import csv
-
+import sst_data
 
 def readCsv(filename):
     File = open("SST predict/" + filename, "r")
@@ -22,12 +22,13 @@ def readCsv(filename):
     return Time, Data
 
 
-'''
-函数：线性回归
 
-返回：最大值， 最小值， 两者距离
-'''
-def linearExgression(testTime, testData, checkTime, checkData):
+def linearExgression(testTime, testData, checkTime, checkData, ifPlot):
+    '''
+    函数：线性回归
+    输入：testTime, testData, 0(不测试), 0(不测试) , true(是否绘图)
+    返回：最大值， 最小值， 两者距离
+    '''
     #设置参数
     #设置梯度下降算法的学习率
     learning_rate = 0.01
@@ -82,20 +83,25 @@ def linearExgression(testTime, testData, checkTime, checkData):
         plt.plot(train_X, train_Y,"ro", label="original data")
         plt.plot(train_X, arrayPredict, label="predict data")
         plt.legend(loc="upper left")
-        plt.show()
-        #测试数据
-        test_X = np.asarray(checkTime)
-        test_Y = np.asarray(checkData)
-        #计算回归模型在测试数据上的loss
-        print("test loss:%.4f",sess.run(loss,feed_dict={X:test_X,Y:test_Y}))
+        if ifPlot == True:
+            plt.show()
+        else:
+            pass
+
+        # #测试数据
+        # test_X = np.asarray(checkTime)
+        # test_Y = np.asarray(checkData)
+        # #计算回归模型在测试数据上的loss
+        # print("test loss:%.4f",sess.run(loss,feed_dict={X:test_X,Y:test_Y}))
         maxVal, minVal, disVal = max(arrayPredict), min(arrayPredict), arrayPredict.size
         return maxVal, minVal, disVal
     pass
 
-'''
-函数：曲线拟合
-'''
+
 def curveFitting(testTime, testData):
+    '''
+    函数：曲线拟合
+    '''
     a, b = [], []
     for i in range(len(testTime)):
         a.append([testTime[i]])
@@ -134,18 +140,16 @@ def curveFitting(testTime, testData):
 
     pass
 
-'''
-函数：预测以后50年内的温度图像
 
-'''
 def predictPlot(initVal, slope):
+    '''
+    函数：预测以后50年内的温度图像
+    '''
     x = range(2020, 2070)
     y = [item * slope + initVal for item in range(1, 51)]
     pass
 
-if __name__ == "__main__":
-    tf.disable_v2_behavior()
-
+def testFunc():
     testTime, testData = readCsv("srcdata.csv")
     checkTime, checkData = readCsv("testdata.csv")
 
@@ -155,5 +159,37 @@ if __name__ == "__main__":
     # 求得斜率
     slope = (maxVal - minVal) / disVal
     predictPlot(maxVal, slope)
+    pass
+
+if __name__ == "__main__":
+    tf.disable_v2_behavior()
+    # testFunc()
+
+    # 斜率的统计表
+    slopeList  = [[0]*14 for i in range(16)]
+
+    # 定位数据点
+    # 循环同一纬度
+    for lat in range(0, 16):
+        # 循环同一经度
+        for lon in range(0, 14):  
+            testData = []
+            # 同样经度/纬度，不同年份的数据
+            for yer in range(0, int(len(sst_data.data) / 16)):
+                testData.append(sst_data.data[yer * 16 + lat][lon])
+            # print(testData) # 测试是否遍历成功
+
+            maxVal, minVal, disVal = linearExgression(range(0, 48), testData, 0, 0, False)
+            slopeList[lat][lon] = (maxVal - minVal) / disVal
+    
+    # 保存文件
+    np.savetxt("SST predict/slopeList.txt",slopeList)
+    # b =  np.loadtxt("slopeList.txt")
+    
+    
+    
+
+
+    
 
 
